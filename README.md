@@ -7,7 +7,7 @@ for sharing session between a Node.js application and services writed on PHP.
 
 ## Requirements
 
-- **PHP**: `7.2` or greater
+- **PHP**: `8.1` or greater
 - **phpredis**
 - **php_serialize** Standart PHP Serialize Handler.
 
@@ -117,4 +117,6 @@ require_once 'vendor/autoload.php';
 ```
 
 ### TODO
-Unit tests :)
+- MongodDB support
+- Dragonfly support
+- Unit tests :)
