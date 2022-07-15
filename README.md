@@ -65,7 +65,30 @@ app.use(session({
 ```php
 require_once 'vendor/autoload.php';
 
-\GeekJOB\ExpressjsSessionHandler::register([
+
+\GeekJOB\ExpressjsSessionHandler::register(
+	name  : 'sid',
+	secret: 'secret key',
+	cookie: [
+		'domain'  => '.your.domain', // Share cookie through sub domains
+		'path'    => '/',
+		'maxage'  => strtotime('+1hour')-time(), // Set maxage
+	],
+	store : [
+		'handler' => 'redis',
+		'path'    => 'tcp://127.0.0.1:6379',
+		'prefix'  => 'session:',
+        	'ttl'	  => 3600 // 60 min
+	],
+	secure: false // Set to true if signature verification is needed.
+);
+```
+
+or use list like way for config
+
+```php
+\GeekJOB\ExpressjsSessionHandler::register(
+    [
 	'name'   => 'sid',
 	'secret' => 'secret key',
 	'cookie' => [
@@ -80,7 +103,8 @@ require_once 'vendor/autoload.php';
         	'ttl'	  => 3600 // 60 min
 	],
 	'secure' => false // Set to true if signature verification is needed.
-]);
+    ]
+);
 ```
 
 ### Configure for production server via php.ini file
@@ -106,14 +130,13 @@ session.cookie_lifetime =
 ```php
 require_once 'vendor/autoload.php';
 
-\GeekJOB\ExpressjsSessionHandler::register([
-	'secret' => 'secret key',
-	'cookie' => [
-		'domain'  => '.your.domain', // Share cookie through sub domains
-		'path'    => '/',
-	],
-	'secure' => false // Set to true if signature verification is needed.
-]);
+\GeekJOB\ExpressjsSessionHandler::register(
+    secret: 'secret key',
+    cookie: [
+	'domain'  => '.your.domain', // Share cookie through sub domains
+	'path'    => '/',
+    ]
+);
 ```
 
 ### TODO
