@@ -2,6 +2,18 @@
 
 namespace GeekJOB;
 
+
+/**
+ *
+ */
+enum WorkStatus
+{
+	case Debug;
+	case Test;
+	case Production;
+}
+
+
 /**
  * Node.js epress-session compatible handler
  *
@@ -15,8 +27,21 @@ class ExpressjsSessionHandler extends \SessionHandler
     /**
      * @var string
      */
-    private string $secret;
-    private array $config;
+	#[\Assert\All(
+		new \Assert\NotNull,
+		new \Assert\Length(min: 24))
+	]
+	private string $secret;
+
+	/**
+	 *
+	 */
+	final public const MDBG = WorkStatus::Production;
+
+	/**
+	 * @var object
+	 */
+	public readonly object $store;
 
     /**
      * @param array $cfg
@@ -44,62 +69,62 @@ class ExpressjsSessionHandler extends \SessionHandler
     /**
      * Constructor
      *
-     * @param string $secret The secret defined in your express-session library.
-     */
-    public function __construct(array $cfg)
+	 * @param array $config
+	 * @throws \Exception
+	 */
+    public function __construct(private array $config)
     {
         // Set session cookie settings
-        if (!empty($cfg['cookie'])) {
-            $cfg['cookie']['maxage'] = (int)$cfg['cookie']['maxage'];
+        if (!empty($config['cookie'])) {
+			$config['cookie']['maxage'] = (int)$config['cookie']['maxage'];
 
             session_set_cookie_params(
-                $cfg['cookie']['maxage'],
-                $cfg['cookie']['path'],
-                $cfg['cookie']['domain'],
-                $cfg['cookie']['secure'] ?? true,
-                $cfg['cookie']['httpOnly'] ?? true
+				$config['cookie']['maxage'],
+				$config['cookie']['path'],
+				$config['cookie']['domain'],
+				$config['cookie']['secure'] ?? true,
+				$config['cookie']['httpOnly'] ?? true
             );
 
-            if (empty($cfg['cookie']['expires']))
-                $cfg['cookie']['expires'] = str_replace(
+            if (empty($config['cookie']['expires']))
+				$config['cookie']['expires'] = str_replace(
                     '+00:00',
                     'Z',
-                    gmdate('c', time() + $cfg['cookie']['maxage'])
+                    gmdate('c', time() + $config['cookie']['maxage'])
                 );
         }
 
         // Configure storage.
         // A common method of storing sessions is the Radish database.
         // These settings can be made in php.ini for the production version
-        if (!empty($cfg['store'])) {
-            ini_set('session.save_handler', $cfg['store']['handler']);
-            $save_path = $cfg['store']['path'];
-            switch ($cfg['store']['handler'])
+        if (!empty($config['store'])) {
+            ini_set('session.save_handler', $config['store']['handler']);
+            $save_path = $config['store']['path'];
+            switch ($config['store']['handler'])
 			{
 				case 'dragonfly':
                 case 'redis':
-                    if (!empty($cfg['store']['prefix']))
-                        $save_path .= "?prefix={$cfg['store']['prefix']}";
+                    if (!empty($config['store']['prefix']))
+                        $save_path .= "?prefix={$config['store']['prefix']}";
                     break;
 
                 case 'mongo':
 					throw new \Exception('Driver for Mongo coming soon :)');
 
 				default:
-					throw new \Exception("Driver for {$cfg['store']['handler']} not implemented!");
+					throw new \Exception("Driver for {$config['store']['handler']} not implemented!");
             }
 
             ini_set('session.save_path', $save_path);
             ini_set('session.serialize_handler', 'php_serialize');
 
-            if ($cfg['store']['ttl'] > 0)
-                ini_set('session.gc_maxlifetime', (string)$cfg['store']['ttl']);
-            if (isset($cfg['cookie']['maxage']))
-                ini_set('session.cookie_lifetime', (string)$cfg['cookie']['maxage']);
+            if ($config['store']['ttl'] > 0)
+                ini_set('session.gc_maxlifetime', (string)$config['store']['ttl']);
+            if (isset($config['cookie']['maxage']))
+                ini_set('session.cookie_lifetime', (string)$config['cookie']['maxage']);
         }
 
-        $this->secret = (string)$cfg['secret'];
-        $this->config = $cfg;
+        $this->secret = (string)$config['secret'];
     }
 
     /**
@@ -237,6 +262,15 @@ class ExpressjsSessionHandler extends \SessionHandler
             $_SESSION['cookie']['expires'] = $this->config['cookie']['expires'];
     }
 
+
+	/**
+	 * @param Countable&Iterator $value
+	 * @return never
+	 */
+	protected function _mongo_handler(Iterator&Countable $value): never {
+		// @todo
+		exit();
+	}
 }
 
 
