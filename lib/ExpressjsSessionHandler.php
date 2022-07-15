@@ -43,11 +43,13 @@ class ExpressjsSessionHandler extends \SessionHandler
 	 */
 	public readonly object $store;
 
-    /**
-     * @param array $cfg
-     * @return ExpressjsSessionHandler
-     */
-    public static function register(array $cfg): self
+
+	/**
+	 * @param array ...$cfg
+	 * @return static
+	 * @throws \Exception
+	 */
+    public static function register(mixed ...$cfg): self
     {
         //ini_set('session.name', $cfg['name']);
         if (!empty($cfg['name'])) session_name($cfg['name']);
@@ -274,4 +276,4 @@ class ExpressjsSessionHandler extends \SessionHandler
 }
 
 
-#EOF#
+//EOF//
